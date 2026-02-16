@@ -2,20 +2,15 @@ pipeline {
     agent any
 
     stages {
-
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t devops-app:1.0 app
-                '''
+                sh 'docker build -t devops-app:1.0 app'
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh '''
-                kubectl apply -f k8s/
-                '''
+                sh 'kubectl apply -f k8s/'
             }
         }
     }
