@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git '.'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                eval $(minikube docker-env)
+                docker build -t devops-app:1.0 -f app/Dockerfile app
+                '''
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                kubectl apply -f k8s/
+                kubectl rollout status deployment/devops-app
+                '''
+            }
+        }
+    }
+}
+
