@@ -3,22 +3,21 @@ kind: Deployment
 metadata:
   name: devops-app
   labels:
-    app: devops
+    app: devops-app
 spec:
   replicas: 2
   strategy:
-  type: RollingUpdate
-  rollingUpdate:
-    maxSurge: 1
-    maxUnavailable: 0
-
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
-      app: devops
+      app: devops-app
   template:
     metadata:
       labels:
-        app: devops
+        app: devops-app
     spec:
       containers:
       - name: devops-app
@@ -34,17 +33,17 @@ spec:
           limits:
             cpu: "500m"
             memory: "256Mi"
+
         readinessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 5000
           initialDelaySeconds: 10
           periodSeconds: 5
 
         livenessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 5000
           initialDelaySeconds: 30
           periodSeconds: 10
-  
