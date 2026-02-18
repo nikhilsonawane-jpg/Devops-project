@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "nikhilsonawane/devops-app"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                  docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
+                    sh '''
+                      echo "$DOCKER_PASS" | docker login -u nikhilsonawane --password-stdin
+                      docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    sh '''
+                      sed -i.bak "s|IMAGE_TAG|${BUILD_NUMBER}|g" k8s/deployment.yaml
+                      kubectl apply -f k8s/
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline completed successfully"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+    }
+}
