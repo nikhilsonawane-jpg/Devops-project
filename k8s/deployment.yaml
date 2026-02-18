@@ -19,12 +19,17 @@ spec:
       labels:
         app: devops-app
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: devops-app
-        image: nikhilsonawane/devops-app:${BUILD_NUMBER}
+        image: nikhilsonawane/devops-app:IMAGE_TAG
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
+
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
 
         resources:
           requests:
