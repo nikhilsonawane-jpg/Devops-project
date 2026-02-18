@@ -32,18 +32,16 @@ pipeline {
             }
         }
 
+
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-                    sh '''
-                      sed -i.bak "s|IMAGE_TAG|${BUILD_NUMBER}|g" k8s/deployment.yaml
-                      kubectl apply -f k8s/
-                    '''
-                }
-            }
-        }
+                sh '''
+                  sed -i.bak "s|IMAGE_TAG|${BUILD_NUMBER}|g" k8s/deployment.yaml
+                  kubectl apply -f k8s/
+                '''
     }
-
+}
+    
     post {
         success {
             echo "✅ Pipeline completed successfully"
