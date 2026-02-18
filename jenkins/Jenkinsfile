@@ -1,17 +1,46 @@
 pipeline {
-    agent any
+  agent any
 
-    stages {
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t devops-app:1.0 app'
-            }
-        }
+  environment {
+    IMAGE_NAME = "nikhilsonawane/devops-app"
+    KUBECONFIG_CRED = credentials('kubeconfig-jenkins')
+  }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh 'kubectl apply -f k8s/'
-            }
-        }
+  stages {
+
+    stage('Build Image') {
+      steps {
+        sh """
+        docker build -t $IMAGE_NAME:${BUILD_NUMBER} app
+        """
+      }
     }
+
+    stage('Push Image') {
+      steps {
+        sh """
+        docker push $IMAGE_NAME:${BUILD_NUMBER}
+        """
+      }
+    }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        withEnv(["KUBECONFIG=$KUBECONFIG_CRED"]) {
+          sh """
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/devops-app
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    failure {
+      sh """
+      kubectl rollout undo deployment/devops-app
+      """
+    }
+  }
 }
