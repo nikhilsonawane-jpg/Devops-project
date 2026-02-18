@@ -26,15 +26,15 @@ pipeline {
 
     stage('Deploy to Kubernetes') {
       steps {
-        withEnv(["KUBECONFIG=$KUBECONFIG_CRED"]) {
-          sh """
+        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+          sh '''
+          kubectl config get-contexts
           kubectl apply -f k8s/
-          kubectl rollout status deployment/devops-app
-          """
+          '''
         }
       }
     }
-  }
+
 
   post {
     failure {
