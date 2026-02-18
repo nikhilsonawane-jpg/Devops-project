@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "nikhilsonawane2jpg/devops-app"
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
