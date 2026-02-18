@@ -1,21 +1,9 @@
-# Lightweight base image
-FROM python:3.9-slim
+FROM jenkins/jenkins:lts-jdk17
 
-# Set working directory
-WORKDIR /app
+USER root
 
-# Copy dependencies first (layer caching best practice)
-COPY requirements.txt .
+RUN apt-get update && \
+    apt-get install -y docker.io && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
-COPY app.py .
-
-# Expose application port
-EXPOSE 5000
-
-# Start application
-CMD ["python", "app.py"]
-
+USER jenkins
