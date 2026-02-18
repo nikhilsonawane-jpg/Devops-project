@@ -1,44 +1,55 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE_NAME = "nikhilsonawane/devops-app"
-    KUBECONFIG_CRED = credentials('kubeconfig-jenkins')
-  }
-
-  stages {
-
-    stage('Build Image') {
-      steps {
-        sh """
-        docker build -t $IMAGE_NAME:${BUILD_NUMBER} app
-        """
-      }
+    environment {
+        IMAGE_NAME = "nikhilsonawane/devops-app"
     }
 
-    stage('Push Image') {
-      steps {
-        sh """
-        docker push $IMAGE_NAME:${BUILD_NUMBER}
-        """
-      }
-    }
+    stages {
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-          sh '''
-          kubectl config get-contexts
-          kubectl apply -f k8s/
-          '''
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                  docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} app
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
+                    sh '''
+                      echo "$DOCKER_PASS" | docker login -u nikhilsonawane --password-stdin
+                      docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    sh '''
+                      sed -i "s|IMAGE_TAG|${BUILD_NUMBER}|g" k8s/deployment.yaml
+                      kubectl apply -f k8s/
+                    '''
+                }
+            }
+        }
     }
 
-
-  post {
-    failure {
-      echo "Pipeline failed"
+    post {
+        success {
+            echo "Pipeline completed successfully"
+        }
+        failure {
+            echo "Pipeline failed"
+        }
     }
-  }
 }
