@@ -26,6 +26,11 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: devops-config
+        - secretRef:
+            name: devops-secret
 
         securityContext:
           runAsNonRoot: true
