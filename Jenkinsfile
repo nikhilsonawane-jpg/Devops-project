@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "nikhilsonawane/devops-app"
+        IMAGE_NAME = "nikhilsonawane2jpg/devops-app"
     }
 
     stages {
