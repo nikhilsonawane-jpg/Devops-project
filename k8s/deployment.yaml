@@ -22,7 +22,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: devops-app
-        image: nikhilsonawane/devops-app:IMAGE_TAG
+        image: nikhilsonawane2jpg/devops-app:IMAGE_TAG
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
