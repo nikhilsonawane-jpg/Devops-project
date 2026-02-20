@@ -1,236 +1,127 @@
-📦 DevOps CI/CD Pipeline using Jenkins, Docker & Kubernetes
+# 🚀 End-to-End CI/CD Pipeline using Jenkins, Docker & Kubernetes
 
-This repository demonstrates a complete End-to-End CI/CD pipeline that automates building, containerizing, pushing, and deploying an application using:
+## 📌 Overview
+This project demonstrates the design, automation, deployment, and validation of a production-style CI/CD pipeline using **Jenkins**, **Docker**, and **Kubernetes**. 
 
-✔️ Jenkins
-✔ Docker
-✔ Docker Hub
-✔ Kubernetes (Minikube)
-✔ ConfigMaps, Secrets, Ingress, HPA
+The pipeline automates the entire workflow from source code commit to containerized application deployment inside a Kubernetes cluster, following real-world DevOps engineering best practices.
 
-🧠 Project Overview
+**The project emphasizes:**
+* **Automation:** Fully hands-off deployment.
+* **Zero-downtime deployments:** Rolling updates via K8s.
+* **Infrastructure reliability:** Self-healing and scalable.
+* **Secure credential management:** No hardcoded secrets.
+* **Self-healing systems:** Automatic recovery of failed components.
+* **Scalable architecture:** Dynamic resource adjustment.
 
-This project showcases a production-style DevOps workflow starting from code commit all the way to deployment on a Kubernetes cluster.
-The pipeline includes:
+---
 
-✔ Automated Docker image build
-✔ Docker Hub image push
-✔ Kubernetes deployment with rolling updates
-✔ Configuration management using ConfigMap & Secret
-✔ Automatic scaling via HPA
-✔ Declarative pipeline using Jenkinsfile
+## 🏗️ Architecture Diagram
 
-📁 Repository Structure
-Devops-project/
-│
-├── app/
-│   ├── Dockerfile
-│   ├── app.py
-│   └── requirements.txt
-│
-├── jenkins/
-│   └── Jenkinsfile
-│
-├── k8s/
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── configmap.yaml
-│   ├── secret.yaml
-│   ├── ingress.yaml
-│   └── hpa.yaml
-│
-├── Dockerfile.jenkins
-├── README.md
-└── .gitignore
-🚀 Architecture Diagram
-  GitHub Repo
-        ↓
-     Jenkins
-        ↓
- Docker Build & Push (to Docker Hub)
-        ↓
- Kubernetes Deployment (Minikube)
-        ↓
-     Application Live
-🔧 Tools & Technologies Used
-Component	Technology
-CI/CD Server	Jenkins (Hosted locally)
-Containerization	Docker
-Container Registry	Docker Hub
-Orchestration	Kubernetes (Minikube)
-Configuration	ConfigMap, Secrets
-Scaling	Horizontal Pod Autoscaler
-Networking	Kubernetes Service + Ingress
-📦 Prerequisites
+![Architecture](architecture/devops.png)
 
-Before you begin, make sure you have the following installed:
+**Workflow:**
+Developer → GitHub Repository → Jenkins Pipeline → Docker Image Build → Docker Hub Registry → Kubernetes Deployment → Running Application Pods
 
-✔ Docker Desktop
-✔ Minikube
-✔ kubectl
-✔ Jenkins (local or containerized)
-✔ GitHub account
-✔ Docker Hub account
+---
 
-Ensure kubectl is connected to your Minikube:
+## 🔄 Request & Deployment Flow
+* **Trigger:** Developer pushes code to GitHub, triggering the Jenkins pipeline.
+* **Build:** Jenkins builds the Docker image using a multi-stage Dockerfile.
+* **Registry:** Image is tagged with the build number and pushed to Docker Hub.
+* **Orchestration:** Jenkins updates the Kubernetes Deployment with the new image tag.
+* **Deployment:** Kubernetes performs a rolling update; new pods become Ready while old pods are terminated without downtime.
+* **Access:** The application becomes accessible via Service/Ingress.
 
-kubectl get nodes
-📝 Kubernetes Manifest Files
-🐣 Deployment
+---
 
-Defines your application deployment with rolling updates and probes:
+## 🧱 Architecture Components
 
-# k8s/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: devops-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: devops-app
-  template:
-    metadata:
-      labels:
-        app: devops-app
-    spec:
-      containers:
-      - name: devops-app
-        image: nikhilsonawane2jpg/devops-app:IMAGE_TAG
-        ports:
-        - containerPort: 5000
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 5000
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 5000
+### 1️⃣ CI/CD Layer (Jenkins)
+* **Declarative Pipeline:** Clean, versioned pipeline-as-code.
+* **Automated Build:** Hands-free Docker image creation.
+* **Secure Auth:** Integrated Docker Hub authentication.
+* **Deployment:** Automated `kubectl` application.
 
-…
+### 2️⃣ Containerization Layer (Docker)
+* **Multi-stage Builds:** Optimized, lightweight production-ready images.
+* **Tagging Strategy:** Versioned images mapped to Jenkins build numbers.
+* **Registry:** Docker Hub utilized as the global image registry.
 
-(extend other files similarly)
+### 3️⃣ Orchestration Layer (Kubernetes)
+* **High Availability:** ReplicaSets ensure constant uptime.
+* **Health Checks:** Liveness and Readiness probes verify application status.
+* **Configuration:** ConfigMaps and Secrets for environment and sensitive data.
+* **Scaling:** Horizontal Pod Autoscaler (HPA) manages load based on CPU.
 
-📌 Setup Jenkins (Local macOS)
-1️⃣ Install Jenkins
-brew install jenkins-lts
-brew services start jenkins-lts
-2️⃣ Access Jenkins
+---
 
-Open:
+## 🔐 Security Design
+* **Credential Manager:** Docker credentials stored securely in Jenkins.
+* **Secret Management:** Kubernetes Secrets used for runtime sensitive values.
+* **Least Privilege:** Cluster access managed via scoped `kubeconfig` credentials.
 
-http://localhost:8080
+---
 
-Unlock using:
+## 📈 Scalability & High Availability
+* **Rolling Updates:** Zero-downtime deployment logic.
+* **Self-Healing:** Deployment controller automatically recreates crashed pods.
+* **HPA:** Automatic scaling based on real-time CPU utilization.
 
-cat ~/.jenkins/secrets/initialAdminPassword
-3️⃣ Install Plugins
+---
 
-Install:
-✔ Docker
-✔ Kubernetes CLI (kubectl)
-✔ Pipeline
+## 🧪 Testing & Validation Performed
+* **Build Validation:** Verified successful image creation and registry push.
+* **Update Behavior:** Confirmed Kubernetes rolling update success.
+* **Resilience Testing:** Simulated pod crashes to verify self-healing.
+* **Probe Verification:** Validated readiness and liveness probe functionality.
 
-📌 Configure Jenkins Credentials
+---
 
-✔ DockerHub Password
+## 📊 Operational Validation
 
-Kind: Secret text
 
-ID: dockerhub-password
+**Monitor rollout status:**
+`kubectl rollout status deployment/devops-app`
 
-📌 Full Jenkinsfile
+**Verify HPA scaling:**
+`kubectl get hpa`
 
-Save this in your repo under:
+**Test local access via port-forward:**
+`kubectl port-forward deployment/devops-app 5000:5000`
 
-jenkins/Jenkinsfile
-pipeline {
-    agent any
+---
 
-    environment {
-        IMAGE_NAME = "nikhilsonawane2jpg/devops-app"
-    }
+## 🧠 Challenges & Learnings
+* **Debugging:** Resolved image misconfigurations and base image issues.
+* **Probes:** Fixed readiness probe failures to ensure traffic only hits healthy pods.
+* **Mechanics:** Gained deep understanding of Kubernetes rolling updates vs. manual pod deletion.
 
-    stages {
+---
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+## 🛠️ Technologies Used
+* **GitHub:** Source Control
+* **Jenkins:** CI/CD Automation
+* **Docker / Docker Hub:** Containerization
+* **Kubernetes (Minikube):** Orchestration
+* **Linux / Kubectl:** Infrastructure Management
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} app/'
-            }
-        }
+---
 
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
-                    sh '''
-                      echo "$DOCKER_PASS" | docker login -u nikhilsonawane2jpg --password-stdin
-                      docker push ${IMAGE_NAME}:${BUILD_NUMBER}
-                    '''
-                }
-            }
-        }
+## 💰 Resource Optimization
+* **Minikube:** Used for cost-efficient local development.
+* **Versioned Images:** Avoids unnecessary rebuilds and provides easy rollbacks.
+* **Replica Scaling:** Prevents over-provisioning of resources.
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                  sed -i.bak "s|IMAGE_TAG|${BUILD_NUMBER}|g" k8s/deployment.yaml
-                  kubectl apply -f k8s/
-                '''
-            }
-        }
-    }
-}
-🛠 Running the Pipeline
+---
 
-Commit & push code to GitHub
+## 🧹 Cleanup
+**Remove all resources:**
+`kubectl delete deployment --all && kubectl delete service --all && kubectl delete hpa --all`
 
-Jenkins poll or webhook triggers build
+**Full Cluster Recreation:**
+`kubectl apply -f k8s/`
 
-Pipeline builds image
+---
 
-Pushes to Docker Hub
-
-Deploys to Kubernetes
-
-You should see logs showing deployment rollout.
-
-🔍 Verify Deployment
-kubectl get pods
-kubectl get svc
-kubectl rollout status deployment/devops-app
-📈 Scaling (HPA)
-
-Horizontal Pod Autoscaler scales based on CPU:
-
-kubectl get hpa
-🧠 What You Learned
-
-✔ Building Docker images in CI
-✔ Managing Docker credentials securely
-✔ Automating deployments with Jenkins pipelines
-✔ Kubernetes deployment strategies
-✔ Liveness & readiness probes
-✔ Horizontal Pod Autoscaling
-
-📌 Notes
-
-Do not commit kubeconfig or sensitive files
-
-.gitignore includes:
-
-kubeconfig-jenkins.yaml
-*.crt
-*.key
-🎯 Contact
-
-📍 GitHub: https://github.com/nikhilsonawane-jpg
-
-📥 nikhil@example.com
+## 🏁 Conclusion
+This project showcases a real-world DevOps CI/CD pipeline, demonstrating end-to-end automation, container lifecycle management, and production-style troubleshooting.
